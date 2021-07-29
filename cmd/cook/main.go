@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/giteshnxtlvl/cook/pkg/cook"
@@ -41,9 +43,40 @@ func permutationMode(values []string) {
 	final = tmp
 }
 
+func repititionOp(value string, array *[]string) bool {
+	if strings.Count(value, "*") == 1 {
+		s := strings.Split(value, "*")
+		input := strings.Split(s[0], ",")
+		times, err := strconv.Atoi(s[1])
+		if err != nil {
+			return false
+		}
+
+		for _, v := range input {
+			*array = append(*array, strings.Repeat(v, times))
+		}
+		return true
+	}
+	if strings.Count(value, "*") == 2 {
+		s := strings.Split(value, "**")
+		input := strings.Split(s[0], ",")
+		till, err := strconv.Atoi(s[1])
+		if err != nil {
+			return false
+		}
+		for _, v := range input {
+			for i := 0; i < till; i++ {
+				*array = append(*array, v)
+			}
+		}
+		return true
+	}
+	return false
+}
+
 func checkParam(p string, array *[]string) bool {
 	if val, exists := params[p]; exists {
-		if cook.PipeInput(val, array) || cook.RawInput(val, array) || cook.ParseFunc(val, array) || cook.ParseFile(p, val, array) || checkMethods(val, array) {
+		if cook.PipeInput(val, array) || cook.RawInput(val, array) || repititionOp(val, array) || cook.ParseFunc(val, array) || cook.ParseFile(p, val, array) || checkMethods(val, array) {
 			return true
 		}
 
@@ -63,7 +96,7 @@ func main() {
 
 		for _, p := range splitValues(param) {
 			cook.VPrint(fmt.Sprintf("Param: %s \n", p))
-			if cook.RawInput(p, &columnValues) || cook.ParseRanges(p, &columnValues) || checkMethods(p, &columnValues) || checkParam(p, &columnValues) || cook.CheckYaml(p, &columnValues) {
+			if cook.RawInput(p, &columnValues) || cook.ParseRanges(p, &columnValues) || repititionOp(p, &columnValues) || checkMethods(p, &columnValues) || checkParam(p, &columnValues) || cook.CheckYaml(p, &columnValues) {
 				continue
 			}
 			columnValues = append(columnValues, p)
